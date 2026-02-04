@@ -15,7 +15,7 @@ radiators = [room.rad_side, room.rad_top, room.rad_bottom]
 for i, radiator in enumerate(radiators):
     M = viz.draw_map(room.shape, room.window_mask, radiator, room.wall_mask)
     viz.plot(M)
-    plt.savefig(f"pokoj_{i}.png")
+    #plt.savefig(f"pokoj_{i}.png")
     plt.close()
 
 
@@ -57,7 +57,7 @@ fig.suptitle('Porównanie rozkładu temperatury dla różnych położeń grzejni
              fontsize=14, fontweight='bold')
 
 plt.tight_layout()
-plt.savefig("rozkład temperatury w pomieszczeniu.png")
+#plt.savefig("rozkład temperatury w pomieszczeniu.png")
 plt.close()
 
 #podsumowanie:
@@ -69,3 +69,4 @@ for position in positions:
     print(f"\n{position.upper():10} | "
           f"Średnia: {res['mean_temp_c']:6.2f}°C | "
           f"Odchylenie: {res['std_temp_c']:5.2f}°C ")
+

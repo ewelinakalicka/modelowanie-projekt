@@ -10,7 +10,7 @@ class PhysicsParameters:
 
         self.lambda_window = 0.96
         self.lambda_air = 0.0262
-        self.lambda_wall = 0.4
+        self.lambda_wall = 0.15
 
         self.beta_window = self.lambda_window / self.lambda_air
         self.beta_wall = self.lambda_wall / self.lambda_air

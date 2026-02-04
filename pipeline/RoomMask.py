@@ -1,7 +1,7 @@
 import numpy as np
 
 class Grid:
-    def __init__(self, room_width = 3.0, room_length = 3.0, Nx = 20, Ny = 20):
+    def __init__(self, room_width = 2.0, room_length = 2.0, Nx = 20, Ny = 20):
         self.room_width = room_width
         self.room_length = room_length
         self.Nx = Nx

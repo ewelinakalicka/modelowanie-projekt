@@ -39,5 +39,3 @@ class RoomVisualizer:
         plt.yticks([])
         plt.title(title)
         plt.tight_layout()
-        plt.show()
-

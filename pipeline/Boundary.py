@@ -1,47 +1,76 @@
-import numpy as np
+import scipy.sparse as sp
 
-def D1_forward(n):
-    return np.eye(n, k=1) - np.eye(n)
+#operatory różnicowe:
+def D1_forward_sparse(n):
+    return sp.eye(n, k=1, format='csr') - sp.eye(n, format='csr')
 
-def D1_backward(n):
-    return -np.eye(n, k=-1) + np.eye(n)
+def D1_backward_sparse(n):
+    return -sp.eye(n, k=-1, format='csr') + sp.eye(n, format='csr')
 
-def D2(n):
-    return np.eye(n, k=-1) - 2 * np.eye(n) + np.eye(n, k=1)
+def D2_sparse(n):
+    return sp.eye(n, k=-1, format='csr') - 2*sp.eye(n, format='csr') + sp.eye(n, k=1, format='csr')
 
 class BoundaryConditions:
-    def __init__(self, grid, physics, room):
+    '''
+    Klasa budująca operatory do obliczenia warunków brzegowych
+    '''
+    def __init__(self, grid, physics):
         self.grid = grid
         self.physics = physics
-        self.room = room
 
-        self._build_derivative_matrices()
-        self._build_boundary_operators()
+        self._build_operators()
 
-    def _build_derivative_matrices(self):
-        Nx, Ny = self.grid.Nx, self.grid.Ny
-        self.id_x = np.eye(Nx)
-        self.id_y = np.eye(Ny)
-        self.id = np.eye(Nx*Ny)
+    def _build_operators(self):
+        g = self.grid
+        Nx, Ny = g.Nx, g.Ny
+        hx, hy = g.hx, g.hy
 
-        self.D1_forward_x = D1_forward(Nx)
-        self.D1_backward_x = D1_backward(Nx)
-        self.D1_forward_y = D1_forward(Ny)
-        self.D1_backward_y = D1_backward(Ny)
+        id_x = sp.eye(Nx, format='csr')
+        id_y = sp.eye(Ny, format='csr')
+        self.id = sp.eye(Nx * Ny, format='csr')
 
-        self.D2_x = D2(Nx)
-        self.D2_y = D2(Ny)
+        self.Bx_forward = -sp.kron(id_y, D1_forward_sparse(Nx)) / hx + self.id * self.physics.beta_wall
+        self.Bx_backward = sp.kron(id_y, D1_backward_sparse(Nx)) / hx + self.id * self.physics.beta_wall
+        self.By_forward = -sp.kron(D1_forward_sparse(Ny), id_x) / hy + self.id * self.physics.beta_wall
+        self.By_backward = sp.kron(D1_backward_sparse(Ny), id_x) / hy + self.id * self.physics.beta_wall
+        self.By_backward_window = sp.kron(D1_backward_sparse(Ny), id_x) / hy + self.id * self.physics.beta_window
 
-    def _build_boundary_operators(self):
-        hx, hy = self.grid.hx, self.grid.hy
+        self.lap = sp.kron(id_y, D2_sparse(Nx)) / (hx ** 2) + sp.kron(D2_sparse(Ny), id_x) / (hy ** 2)
 
-        self.Bx_forward = -np.kron(self.id_y, self.D1_forward_x) / hx + self.id * self.physics.beta_wall
-        self.Bx_backward = np.kron(self.id_y, self.D1_backward_x) / hx + self.id * self.physics.beta_wall
-        self.By_forward = -np.kron(self.D1_forward_y, self.id_x) / hy + self.id * self.physics.beta_wall
-        self.By_backward = np.kron(self.D1_backward_y, self.id_x) / hy + self.id * self.physics.beta_wall
-        self.By_backward_window = np.kron(self.D1_backward_y, self.id_x) / hy + self.id * self.physics.beta_window
+    def apply(self, A, room):
+        '''
+        Funkcja nakładająca warunki brzegowe na macierz A
+        '''
+        g = self.grid
+        A = A.tolil()
+        # Warunki brzegowe:
+        # lewa ściana:
+        A[g.ind_edge_left, :] = self.Bx_forward[g.ind_edge_left, :]
+        # górna ściana:
+        A[g.ind_edge_top, :] = self.By_backward[g.ind_edge_top, :]
+        # prawa ściana:
+        A[g.ind_edge_right, :] = self.Bx_backward[g.ind_edge_right, :]
+        # dolna ściana:
+        A[g.ind_edge_bottom, :] = self.By_forward[g.ind_edge_bottom, :]
+        # okno:
+        A[room.window.mask, :] = self.By_backward_window[room.window.mask, :]
 
-    def laplacian(self):
-        hx, hy = self.grid.hx, self.grid.hy
+        return A.tocsr()
 
-        return (np.kron(self.id_y, self.D2_x) / (hx ** 2) + np.kron(self.D2_y, self.id_x) / (hy ** 2))
+    def apply_rhs(self, rhs, room, T_out, neighbour_temps=None):
+        g = self.grid
+        p = self.physics
+        rhs = rhs.copy()
+
+        def wall(mask, T, beta):
+            rhs[mask] = beta * T
+
+        for side in ['left', 'right', 'top', 'bottom']:
+            if neighbour_temps and side in neighbour_temps:
+                wall(getattr(g, f"ind_edge_{side}"), neighbour_temps[side], p.beta_wall)
+            else:
+                wall(getattr(g, f"ind_edge_{side}"), T_out, p.beta_wall)
+
+        wall(room.window.mask, T_out, p.beta_window)
+
+        return rhs

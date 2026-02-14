@@ -26,6 +26,7 @@ modelowanie-project/
 │ ├─ scenariusz2.png
 │ ├─ scenariusz3.png
 │ └─ schemat_pokoj.png
+├─ Heating_project.pdf
 ├─ requirements.txt
 └─ README.md
 ```
@@ -46,7 +47,7 @@ modelowanie-project/
   - `main2.py` - uruchamia symulacje dla problemu 2. 
 
 - `plots` - wykresy, schematy, heatmapy
-
+- `Heating_project.pdf` - plik pdf z raportem
 - `requirements.txt` - wymagane paczki do odpalenia kodu
 - `.gitignore` - pliki i foldery, które system ma ignorować w repozytorium 
 

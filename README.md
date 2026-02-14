@@ -4,6 +4,7 @@ Projekt ma na celu zasymulowanie rozkładu temperatur w pokoju z jednym grzejnik
 
 ## Struktura projektu 
 
+```
 modelowanie-project/
 ├─ notebooks/ 
 │ ├─ problem1.ipynb
@@ -25,6 +26,7 @@ modelowanie-project/
 │ └─ schemat_pokoj.png
 ├─ requirements.txt
 └─ README.md
+```
 
 ## Zawartość poszczególnych elementów repozytorium 
 

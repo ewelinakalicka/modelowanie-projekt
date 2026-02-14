@@ -16,7 +16,9 @@ modelowanie-project/
 │ ├─ Radiator.py
 │ ├─ RoomMask.py
 │ ├─ Solver.py
-│ └─ Visualizations.py
+│ ├─ Visualizations.py
+│ ├─ main1.py
+│ └─ main2.py
 ├─ plots/
 │ ├─ rozklad_temperatury_problem1.png
 │ ├─ podsumowanie.png

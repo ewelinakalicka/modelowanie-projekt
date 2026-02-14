@@ -34,11 +34,6 @@ class Visualizer:
              legend_pos=(1.0, 0.85)):
         '''
         Rysuje schemat pokoju z różnymi położeniami grzejnika
-        :param maps:
-        :param titles:
-        :param suptitle:
-        :param legend_pos:
-        :return:
         '''
         n = len(maps)
         fig, axes = plt.subplots(1, n, figsize=(5 * n, 4))
@@ -107,3 +102,5 @@ class Visualizer:
 
             print(f"{name:<12} | {avg_t:>7.2f}°C | {max_t:>7.2f}°C | "
                   f"{min_t:>7.2f}°C | {std_t:>7.2f} | {energy_kj:>10.2f}")
+
+
